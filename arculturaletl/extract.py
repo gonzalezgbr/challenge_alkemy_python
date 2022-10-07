@@ -39,6 +39,7 @@ def make_url(url):
 def extract_data():
     """Downloads and locally saves csv files using urls from config file."""
     
+    csv_filepaths = {}
     urls = {
         'museos' : config('URL_MUSEOS'),
         'bibliotecas' : config('URL_BIBLIOTECAS'),
@@ -48,15 +49,17 @@ def extract_data():
         downloadable_url = make_url(url)
         filepath = make_filepath(category) / make_filename(category)
         try:
-            r = requests.get(downloadable_url, timeout=3)
-        except requests.exceptions.RequestException as e:
-            print(f'There was an error downloading the files: {e}', file=sys.stderr)
-            exit()
+            response = requests.get(downloadable_url, timeout=3)
+        except requests.exceptions.RequestException as error:
+            print(f'There was an error downloading the files: {error}', file=sys.stderr)
+            sys.exit()
         try:
-            with open(filepath, 'wb') as f:
-                f.write(r.content)
+            with open(filepath, 'wb') as csv_file:
+                csv_file.write(response.content)
+                csv_filepaths[category] = filepath
         except OSError:
             print('There was a problem saving the files locally.', file=sys.stderr)
+    return csv_filepaths
 
 
 if __name__ == '__main__':
