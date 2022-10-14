@@ -5,7 +5,7 @@
 from pathlib import Path
 
 from decouple import config
-from sqlalchemy import create_engine, Engine, exc, text
+from sqlalchemy import create_engine, engine, exc, text 
 import pandas as pd
 
 
@@ -15,17 +15,18 @@ def make_connection_uri() -> str:
     return f"{config('DB_DRIVER')}://{config('USER')}:{config('PASSWORD')}@{config('HOST')}:{config('PORT')}/{config('DB')}"
  
 
-def make_engine() -> Engine:
+def make_engine() -> engine.Engine:
     """Return engine to connect to DB."""
 
     return create_engine(make_connection_uri())
 
 
-def create_table(engine: Engine, table_name: str):
+def create_table(engine: engine.Engine, table_name: str):
     """Create table from sql script in sql folder."""
     
-    file_path = Path(__file__).parent.resolve() / 'sql' / table_name / '.sql'
-    
+    filename = table_name + '.sql'
+    file_path = Path(__file__).parent.resolve() / 'sql' / filename
+    print(file_path)
     try:
         with open(file_path) as sql_file:
             sql_str = sql_file.read()
@@ -38,7 +39,7 @@ def create_table(engine: Engine, table_name: str):
         print('File not found')    
 
 
-def load_data(engine: Engine, table_name: str, df: pd.DataFrame):
+def load_data(engine: engine.Engine, table_name: str, df: pd.DataFrame):
     """Load a pandas DF into a postgreSQL table."""
     
     df.to_sql(table_name, con=engine, if_exists='replace', index=False)
