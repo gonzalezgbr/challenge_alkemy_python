@@ -39,7 +39,7 @@ def make_url(url: str) -> str:
     return url[:edit_idx] + 'gviz/tq?tqx=out:csv'
 
 
-def extract_data() -> Dict(str, Path):
+def extract_data() -> Dict[str, Path]:
     """Download and locally save csv files using urls from config file. 
     Return csv filepaths."""
     
