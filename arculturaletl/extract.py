@@ -4,17 +4,18 @@ from datetime import date, datetime
 from pathlib import Path
 import locale
 import sys
+from typing import Dict
 
 from decouple import config
 import requests
 
 
-def make_filename(category):
+def make_filename(category: str) -> str:
     """Return filename as 'category-day_nbr-month_nbr-year_nbr.csv.'"""
 
     return f"{category}-{date.today().strftime('%d-%m-%Y')}.csv"
 
-def make_filepath(category):
+def make_filepath(category: str) -> str:
     """Return full filepath as 'data/category/year_nbr-month_name', create folders if 
     they don't exist.
     """
@@ -31,13 +32,16 @@ def make_filepath(category):
     
     return filepath
 
-def make_url(url):
+
+def make_url(url: str) -> str:
     """Adjust url from config to be able to download googlesheet as csv."""
     edit_idx = url.find('edit')
     return url[:edit_idx] + 'gviz/tq?tqx=out:csv'
 
-def extract_data():
-    """Downloads and locally saves csv files using urls from config file."""
+
+def extract_data() -> Dict(str, Path):
+    """Download and locally save csv files using urls from config file. 
+    Return csv filepaths."""
     
     csv_filepaths = {}
     urls = {
@@ -60,7 +64,3 @@ def extract_data():
         except OSError:
             print('There was a problem saving the files locally.', file=sys.stderr)
     return csv_filepaths
-
-
-if __name__ == '__main__':
-    extract_data()
