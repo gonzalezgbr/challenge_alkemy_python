@@ -126,3 +126,66 @@ def make_master_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
                                                     if str(x).find('.0') != -1 else x)
 
     return master_df
+
+
+def make_summary_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Return df with summary calculations for required categories."""
+
+        
+    # 1) Rename columns so all dfs match
+    columns = ['cod_localidad', 'id_provincia', 'id_departamento', 'categoria', 
+                'provincia', 'localidad','nombre','domicilio', 'codigo_postal', 'Cod_tel',
+                'Teléfono', 'mail', 'web' ]
+    bibliotecas_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 
+                        'Provincia', 'Localidad','Nombre','Domicilio', 'CP', 'Cod_tel', 
+                        'Teléfono', 'Mail', 'Web' ]
+    cines_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 'Provincia', 
+                        'Localidad','Nombre','Dirección', 'CP', 'cod_area', 'Teléfono', 
+                        'Mail', 'Web' ]
+    museos_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'categoria', 'provincia', 
+                        'localidad','nombre','direccion', 'CP', 'cod_area', 'telefono', 
+                        'Mail', 'Web' ]
+    dfs['bibliotecas'].rename(columns=dict(zip(bibliotecas_columns, columns)), 
+                            inplace=True)
+    dfs['cines'].rename(columns=dict(zip(cines_columns, columns)), inplace=True)
+    dfs['museos'].rename(columns=dict(zip(museos_columns, columns)), inplace=True)
+    # concatenate dfs into one
+    master_df = pd.concat([dfs['bibliotecas'][columns], 
+                            dfs['cines'][columns], 
+                            dfs['museos'][columns]])
+
+    # Cantidad de registros totales por categoría
+    df_totales_categoria = master_df[['id_provincia', 'categoria']].groupby('categoria').count()
+    df_temp1 = pd.DataFrame(
+        {
+            'etiqueta': ['categoria']*3,
+            'valor': df_totales_categoria.index,
+            'total': df_totales_categoria['id_provincia']
+        })
+    df_temp1.reset_index(inplace=True)
+    df_temp1.drop(['categoria'], inplace=True, axis='columns')
+    
+    # Cantidad de registros totales por fuente 
+    df_temp2 = pd.DataFrame(
+        {
+            'etiqueta': ['fuente']*3,
+            'valor': ['bibliotecas', 'cines', 'museos'],
+            'total': [dfs['bibliotecas'].shape[0], dfs['cines'].shape[0], dfs['museos'].shape[0]]
+        })
+    
+    # Cantidad de registros por provincia y categoría
+    df_totales_prov_categoria = master_df[['id_provincia', 'provincia', 'categoria']].groupby(['provincia','categoria']).count()
+    values = ['_'.join(row) for row in df_totales_prov_categoria.index]
+    df_temp3 = pd.DataFrame(
+        {
+            'etiqueta': ['provincia_categoria']*df_totales_prov_categoria.shape[0],
+            'valor': ['_'.join(row) for row in df_totales_prov_categoria.index],
+            'total': df_totales_prov_categoria['id_provincia']
+        })
+    df_temp3.reset_index(inplace=True)
+    df_temp3.drop(['provincia', 'categoria'], inplace=True, axis='columns')
+
+    # Concat all 3
+    df_summary = pd.concat([df_temp1, df_temp2, df_temp3], axis='rows', copy=True)
+    
+    return df_summary

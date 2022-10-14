@@ -9,7 +9,7 @@ import pandas as pd
 
 from arculturaletl.extract import extract_data
 from arculturaletl.load import make_engine, create_table, load_data
-from arculturaletl.transform import load_datasets, make_master_dataset
+from arculturaletl.transform import load_datasets, make_master_dataset, make_summary_dataset
 
 
 if __name__ == '__main__':
@@ -33,6 +33,10 @@ if __name__ == '__main__':
     load_data(engine, table_name='lugar', df=lugar_df)
 
     # Make resumen df and load to bd table
+    resumen_df = make_summary_dataset(dfs)
+    resumen_df['fecha_carga'] = datetime.now()
+    create_table(engine, table_name='resumen')
+    load_data(engine, table_name='resumen', df=resumen_df)
 
 
     engine.dispose()
