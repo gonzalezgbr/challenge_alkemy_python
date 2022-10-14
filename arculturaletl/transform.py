@@ -1,3 +1,5 @@
+# transform.py
+
 """This module loads the local files, transforms the datasets according to the
  requirements and calls the load module."""
 
@@ -8,25 +10,24 @@ import numpy as np
 import pandas as pd
 
 
-def get_file_category(filename):
+def get_file_category(filename: str) -> str:
     """Return the first word of the filename, which indicates its category."""
 
     first_dash = filename.find('-')
     return filename[:first_dash]
 
 
-def load_datasets(csv_filepaths):
+def load_datasets(csv_filepaths: Dict[str, Path]) -> Dict[str, pd.DataFrame]:
     """Load all dfs in a dict to pass into each of the transform functions."""
     
     dfs = {}
     for category, filepath in csv_filepaths.items():
-        #category = get_file_category(file.stem)
         df = pd.read_csv(filepath, encoding='utf8')
         dfs[category] = df
     return dfs
 
 
-def make_phone_number(row):
+def make_phone_number(row: pd.Series) -> pd.Series:
     """To be applied on df row. Make phone number from cod_area and telefono, 
     cleaning each value first."""
     
@@ -53,7 +54,7 @@ def make_phone_number(row):
     return row
 
 
-def unify_province_names(row):
+def unify_province_names(row: pd.Series) -> pd.Series:
     """To be applied on df row. Some provinces have two different names, unify them."""
     
     if row['provincia'] == 'Neuquén\xa0':
@@ -66,7 +67,7 @@ def unify_province_names(row):
     return row
 
 
-def convert_text_nulls_to_nan(row):
+def convert_text_nulls_to_nan(row: pd.Series) -> pd.Series:
     """To be applied on df row. Some rows have textual nulls, convert them to NaN."""
     
     nulls = ['sin dirección', 's/d']
@@ -84,9 +85,9 @@ def make_master_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Return datatset with data from all 3 files and required fields."""
     
     # 1) Rename columns so all dfs match
-    columns = ['cod_localidad', 'id_provincia', 'id_departamento', 'categoria', 'provincia', 
-                'localidad','nombre','domicilio', 'codigo_postal', 'Cod_tel', 'Teléfono', 'mail', 
-                'web' ]
+    columns = ['cod_localidad', 'id_provincia', 'id_departamento', 'categoria', 
+                'provincia', 'localidad','nombre','domicilio', 'codigo_postal', 'Cod_tel',
+                'Teléfono', 'mail', 'web' ]
     bibliotecas_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 
                         'Provincia', 'Localidad','Nombre','Domicilio', 'CP', 'Cod_tel', 
                         'Teléfono', 'Mail', 'Web' ]
@@ -125,18 +126,3 @@ def make_master_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
                                                     if str(x).find('.0') != -1 else x)
 
     return master_df
-
-
-if __name__ == '__main__':
-    print(Path.cwd())
-    csv_filepaths = {
-        'bibliotecas' : Path(__file__).parent.resolve() / 'data/bibliotecas/2022-octubre/bibliotecas-07-10-2022.csv',
-        'cines' : Path(__file__).parent.resolve() / 'data/cines/2022-octubre/cines-07-10-2022.csv',
-        'museos' : Path(__file__).parent.resolve() / 'data/museos/2022-octubre/museos-07-10-2022.csv'
-    }
-    dfs = load_datasets(csv_filepaths)
-    master_df = make_master_dataset(dfs)
-    master_df.to_csv('victory.csv', encoding='utf8')
-    #load_into_table('lugar', master_df)
-    #make_totals_dataset()
-    #make_cinemas_dataset()
