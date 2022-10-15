@@ -5,6 +5,7 @@
 
 from pathlib import Path
 from typing import Dict
+import logging
 
 import numpy as np
 import pandas as pd
@@ -24,6 +25,9 @@ def load_datasets(csv_filepaths: Dict[str, Path]) -> Dict[str, pd.DataFrame]:
     for category, filepath in csv_filepaths.items():
         df = pd.read_csv(filepath, encoding='utf8')
         dfs[category] = df
+    
+    logging.info('Archivos .csv leídos correctamente para su posterior procesamiento.')
+    
     return dfs
 
 
@@ -124,6 +128,8 @@ def make_master_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     # 6) Some CP values have .0 at the end, remove them
     master_df['codigo_postal'] = master_df['codigo_postal'].map(lambda x: str(x)[:-2] 
                                                     if str(x).find('.0') != -1 else x)
+    
+    logging.info('Dataset principal (lugar) procesado correctamente.')
 
     return master_df
 
@@ -191,6 +197,8 @@ def make_summary_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     # Concat all 3
     df_summary = pd.concat([df_temp1, df_temp2, df_temp3], axis='rows', copy=True)
     
+    logging.info('Dataset resumen procesado correctamente.')
+
     return df_summary
 
 
@@ -213,4 +221,7 @@ def make_cine_dataset(df: pd.DataFrame) -> pd.DataFrame:
         'espacio_INCAA': 'cant_espacios_incaa'
         }, inplace=True)
     df_resumen_cine.reset_index(inplace=True)
+
+    logging.info('Dataset cine procesado correctamente.')
+
     return df_resumen_cine

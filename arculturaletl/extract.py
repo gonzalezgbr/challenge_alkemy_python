@@ -3,10 +3,11 @@
 from datetime import date, datetime
 from pathlib import Path
 import locale
+import logging
 import sys
-from typing import Dict
+from typing import Dict, Optional
 
-from decouple import config
+from decouple import config, UndefinedValueError
 import requests
 
 
@@ -33,10 +34,14 @@ def make_filepath(category: str) -> str:
     return filepath
 
 
-def make_url(url: str) -> str:
+def make_url(url: str) -> Optional[str]:
     """Adjust url from config to be able to download googlesheet as csv."""
     edit_idx = url.find('edit')
-    return url[:edit_idx] + 'gviz/tq?tqx=out:csv'
+    if edit_idx != -1:
+        return url[:edit_idx] + 'gviz/tq?tqx=out:csv'
+    else:
+        logging.error('Alguna url de descarga no es correcta')
+        sys.exit(1)
 
 
 def extract_data() -> Dict[str, Path]:
@@ -44,23 +49,31 @@ def extract_data() -> Dict[str, Path]:
     Return csv filepaths."""
     
     csv_filepaths = {}
-    urls = {
-        'museos' : config('URL_MUSEOS'),
-        'bibliotecas' : config('URL_BIBLIOTECAS'),
-        'cines' : config('URL_CINES')
-    }
+    try:    
+        urls = {
+            'museos' : config('URL_MUSEOS'),
+            'bibliotecas' : config('URL_BIBLIOTECAS'),
+            'cines' : config('URL_CINES')
+        }
+    except UndefinedValueError as error:
+        logging.error('No se encontraron las url de descarga de archivos en archivo .env.')
+        sys.exit(1)
+
     for category, url in urls.items():
         downloadable_url = make_url(url)
         filepath = make_filepath(category) / make_filename(category)
         try:
             response = requests.get(downloadable_url, timeout=3)
         except requests.exceptions.RequestException as error:
-            print(f'There was an error downloading the files: {error}', file=sys.stderr)
-            sys.exit()
+            logging.error(f'Error descargando los archivos: {error}')
+            sys.exit(1)
         try:
             with open(filepath, 'wb') as csv_file:
                 csv_file.write(response.content)
                 csv_filepaths[category] = filepath
-        except OSError:
-            print('There was a problem saving the files locally.', file=sys.stderr)
+                logging.info(f'Archivo {category} descargado y almacenado localmente.')
+        except OSError as error:
+            logging.error('Error al guardar los archivos localmente: {error}')
+            sys.exit(1)
+    
     return csv_filepaths
