@@ -9,7 +9,7 @@ import pandas as pd
 
 from arculturaletl.extract import extract_data
 from arculturaletl.load import make_engine, create_table, load_data
-from arculturaletl.transform import load_datasets, make_master_dataset, make_summary_dataset
+from arculturaletl.transform import load_datasets, make_master_dataset, make_summary_dataset, make_cine_dataset
 
 
 if __name__ == '__main__':
@@ -38,5 +38,10 @@ if __name__ == '__main__':
     create_table(engine, table_name='resumen')
     load_data(engine, table_name='resumen', df=resumen_df)
 
+    # Make cine df and load to bd table
+    cine_df = make_cine_dataset(dfs['cines'])
+    cine_df['fecha_carga'] = datetime.now()
+    create_table(engine, table_name='cine')
+    load_data(engine, table_name='cine', df=cine_df)
 
     engine.dispose()
