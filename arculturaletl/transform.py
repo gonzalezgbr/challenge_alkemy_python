@@ -26,6 +26,24 @@ def load_datasets(csv_filepaths: Dict[str, Path]) -> Dict[str, pd.DataFrame]:
         df = pd.read_csv(filepath, encoding='utf8')
         dfs[category] = df
     
+    # Rename columns so all dfs match
+    columns = ['cod_localidad', 'id_provincia', 'id_departamento', 'categoria', 
+                'provincia', 'localidad','nombre','domicilio', 'codigo_postal', 'Cod_tel',
+                'Teléfono', 'mail', 'web', 'fuente']
+    bibliotecas_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 
+                        'Provincia', 'Localidad','Nombre','Domicilio', 'CP', 'Cod_tel', 
+                        'Teléfono', 'Mail', 'Web', 'Fuente']
+    cines_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 'Provincia', 
+                        'Localidad','Nombre','Dirección', 'CP', 'cod_area', 'Teléfono', 
+                        'Mail', 'Web', 'Fuente']
+    museos_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'categoria', 'provincia', 
+                        'localidad','nombre','direccion', 'CP', 'cod_area', 'telefono', 
+                        'Mail', 'Web', 'fuente']
+    dfs['bibliotecas'].rename(columns=dict(zip(bibliotecas_columns, columns)), 
+                            inplace=True)
+    dfs['cines'].rename(columns=dict(zip(cines_columns, columns)), inplace=True)
+    dfs['museos'].rename(columns=dict(zip(museos_columns, columns)), inplace=True)
+    
     logging.info('Archivos .csv leídos correctamente para su posterior procesamiento.')
     
     return dfs
@@ -88,24 +106,12 @@ def convert_text_nulls_to_nan(row: pd.Series) -> pd.Series:
 def make_master_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Return datatset with data from all 3 files and required fields."""
     
-    # 1) Rename columns so all dfs match
+
+    # concatenate dfs into one
     columns = ['cod_localidad', 'id_provincia', 'id_departamento', 'categoria', 
                 'provincia', 'localidad','nombre','domicilio', 'codigo_postal', 'Cod_tel',
-                'Teléfono', 'mail', 'web' ]
-    bibliotecas_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 
-                        'Provincia', 'Localidad','Nombre','Domicilio', 'CP', 'Cod_tel', 
-                        'Teléfono', 'Mail', 'Web' ]
-    cines_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 'Provincia', 
-                        'Localidad','Nombre','Dirección', 'CP', 'cod_area', 'Teléfono', 
-                        'Mail', 'Web' ]
-    museos_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'categoria', 'provincia', 
-                        'localidad','nombre','direccion', 'CP', 'cod_area', 'telefono', 
-                        'Mail', 'Web' ]
-    dfs['bibliotecas'].rename(columns=dict(zip(bibliotecas_columns, columns)), 
-                            inplace=True)
-    dfs['cines'].rename(columns=dict(zip(cines_columns, columns)), inplace=True)
-    dfs['museos'].rename(columns=dict(zip(museos_columns, columns)), inplace=True)
-    # concatenate dfs into one
+                'Teléfono', 'mail', 'web',]
+    
     master_df = pd.concat([dfs['bibliotecas'][columns], 
                             dfs['cines'][columns], 
                             dfs['museos'][columns]])
@@ -136,26 +142,10 @@ def make_master_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
 
 def make_summary_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Return df with summary calculations for required categories."""
-
-        
-    # 1) Rename columns so all dfs match
-    columns = ['cod_localidad', 'id_provincia', 'id_departamento', 'categoria', 
-                'provincia', 'localidad','nombre','domicilio', 'codigo_postal', 'Cod_tel',
-                'Teléfono', 'mail', 'web', 'fuente']
-    bibliotecas_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 
-                        'Provincia', 'Localidad','Nombre','Domicilio', 'CP', 'Cod_tel', 
-                        'Teléfono', 'Mail', 'Web', 'Fuente']
-    cines_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 'Provincia', 
-                        'Localidad','Nombre','Dirección', 'CP', 'cod_area', 'Teléfono', 
-                        'Mail', 'Web', 'Fuente']
-    museos_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'categoria', 'provincia', 
-                        'localidad','nombre','direccion', 'CP', 'cod_area', 'telefono', 
-                        'Mail', 'Web', 'fuente']
-    dfs['bibliotecas'].rename(columns=dict(zip(bibliotecas_columns, columns)), 
-                            inplace=True)
-    dfs['cines'].rename(columns=dict(zip(cines_columns, columns)), inplace=True)
-    dfs['museos'].rename(columns=dict(zip(museos_columns, columns)), inplace=True)
+    
     # concatenate dfs into one
+    columns = ['id_provincia', 'categoria', 
+                'provincia', 'nombre', 'fuente']
     master_df = pd.concat([dfs['bibliotecas'][columns], 
                             dfs['cines'][columns], 
                             dfs['museos'][columns]])

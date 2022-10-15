@@ -26,6 +26,7 @@ def configure_logger():
                                             logging.StreamHandler(sys.stdout)])
     logging.info('Inicio de ejecución.')
 
+
 if __name__ == '__main__':
     
     configure_logger()
