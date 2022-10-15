@@ -189,3 +189,25 @@ def make_summary_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     df_summary = pd.concat([df_temp1, df_temp2, df_temp3], axis='rows', copy=True)
     
     return df_summary
+
+
+def make_cine_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    """Return df with cine summary information by Province."""
+
+    # Sumar pantallas y butacas, por provincia
+    df_pantallas = df[['Pantallas', 'provincia']].groupby('provincia').sum()
+    df_butacas = df[['Butacas', 'provincia']].groupby('provincia').sum()
+    
+    # Corregir los str 0 por nulo, y contar los que tienen valor en espacio_INCAA
+    df['espacio_INCAA'] = df['espacio_INCAA'].map(lambda x: np.nan if x=='0' else x)
+    df_incaa = df[['espacio_INCAA', 'provincia']].groupby('provincia').count()
+    
+    # concatenar los dfs, por columnas
+    df_resumen_cine = pd.concat([df_pantallas, df_butacas, df_incaa], axis='columns', copy=True)
+    df_resumen_cine.rename(columns={
+        'Pantallas': 'cant_pantallas', 
+        'Butacas': 'cant_butacas',
+        'espacio_INCAA': 'cant_espacios_incaa'
+        }, inplace=True)
+    df_resumen_cine.reset_index(inplace=True)
+    return df_resumen_cine
