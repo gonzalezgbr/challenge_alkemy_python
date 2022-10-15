@@ -135,16 +135,16 @@ def make_summary_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     # 1) Rename columns so all dfs match
     columns = ['cod_localidad', 'id_provincia', 'id_departamento', 'categoria', 
                 'provincia', 'localidad','nombre','domicilio', 'codigo_postal', 'Cod_tel',
-                'Teléfono', 'mail', 'web' ]
+                'Teléfono', 'mail', 'web', 'fuente']
     bibliotecas_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 
                         'Provincia', 'Localidad','Nombre','Domicilio', 'CP', 'Cod_tel', 
-                        'Teléfono', 'Mail', 'Web' ]
+                        'Teléfono', 'Mail', 'Web', 'Fuente']
     cines_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'Categoría', 'Provincia', 
                         'Localidad','Nombre','Dirección', 'CP', 'cod_area', 'Teléfono', 
-                        'Mail', 'Web' ]
+                        'Mail', 'Web', 'Fuente']
     museos_columns = ['Cod_Loc', 'IdProvincia', 'IdDepartamento', 'categoria', 'provincia', 
                         'localidad','nombre','direccion', 'CP', 'cod_area', 'telefono', 
-                        'Mail', 'Web' ]
+                        'Mail', 'Web', 'fuente']
     dfs['bibliotecas'].rename(columns=dict(zip(bibliotecas_columns, columns)), 
                             inplace=True)
     dfs['cines'].rename(columns=dict(zip(cines_columns, columns)), inplace=True)
@@ -166,12 +166,15 @@ def make_summary_dataset(dfs: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     df_temp1.drop(['categoria'], inplace=True, axis='columns')
     
     # Cantidad de registros totales por fuente 
+    df_totales_fuente = master_df[['id_provincia', 'fuente']].groupby('fuente').count()
     df_temp2 = pd.DataFrame(
         {
-            'etiqueta': ['fuente']*3,
-            'valor': ['bibliotecas', 'cines', 'museos'],
-            'total': [dfs['bibliotecas'].shape[0], dfs['cines'].shape[0], dfs['museos'].shape[0]]
+            'etiqueta': ['fuente']*df_totales_fuente.shape[0],
+            'valor': df_totales_fuente.index,
+            'total': df_totales_fuente['id_provincia']
         })
+    df_temp2.reset_index(inplace=True)
+    df_temp2.drop(['fuente'], inplace=True, axis='columns')
     
     # Cantidad de registros por provincia y categoría
     df_totales_prov_categoria = master_df[['id_provincia', 'provincia', 'categoria']].groupby(['provincia','categoria']).count()
