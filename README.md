@@ -23,7 +23,7 @@ Las url de descarga, los datos de conexión a la base de datos y el nivel de log
 git clone git@github.com:gonzalezgbr/challenge_alkemy_python.git .
 ```
 
-3. Crear un entorno virtual usando venv
+3. Crear un entorno virtual usando `venv`
 ```sh
 py -m venv venv
 ```
@@ -38,9 +38,9 @@ venv/Scripts/Activate
 pip install -r arculturaletl/requirements.txt
 ```
 
-6. Crear la base de datos `postgreSQL`
+6. Crear una base de datos `postgreSQL`
 
-7. Crear el archivo de configuración .env dentro del paquete `arculturaletl/` y completar con los valores correspondientes
+7. Crear el archivo de configuración `.env` dentro del paquete `arculturaletl/` y completar con los valores correspondientes
 > LOG_LEVEL es opcional y puede tomar un valor de: `DEBUG` | `INFO` | `WARNING` | `ERROR` | `CRITICAL`. Si no se proporciona, se utiliza el nivel `INFO` por defecto.
 
 ```sh
@@ -74,3 +74,9 @@ El proyecto se estructura en 4 archivos principales:
 Adicionalmente: 
 - en la carpeta `notebooks` se encuentra el archivo `explore.ipynb` que se utilizó para explorar los datasets descargados y, definir y probar las transformaciones necesarias para generar los datos que se cargarían en las tablas de la BD.
 - en la carpeta `sql` se encuentran los scripts utilizados para la creación de las tablas en la BD.
+
+## Troubleshooting
+- Si se utiliza VSCode como IDE puede ser necesario configurar la siguiente linea en el archivo `.json User Settings`
+```sh
+"terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder}" }
+```
